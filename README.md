@@ -1,95 +1,87 @@
-# tanvrit/communication
+# tanvrit-sdk · communication
 
-Messaging, notifications, and real-time communication channels.
+> Real-time chat, messaging threads, presence, and WebRTC video / audio calls.
 
-## Supported Targets
-
-| Target | Artifact suffix | Notes |
-|--------|----------------|-------|
-| Android | `-android` | minSdk 24+ |
-| iOS arm64 (device) | `-iosarm64` | Native |
-| iOS x64 (simulator, Intel) | `-iosx64` | Native |
-| iOS Simulator arm64 | `-iossimulatorarm64` | Native |
-| JVM (Ktor server / desktop) | `-jvm` | Java 11+ |
-| WasmJS | `-wasmjs` | Experimental |
-| JS (IR) | `-js` | Experimental |
-
-## Prerequisites
-
-This module depends on: [core](https://github.com/tanvrit/core).
-
-Add those modules to your build before adding `communication`.
+[![Maven](https://img.shields.io/badge/maven.tanvrit.com-1.0.12-blue)](https://maven.tanvrit.com)
+![KMP](https://img.shields.io/badge/Kotlin_Multiplatform-7_targets-blueviolet)
 
 ## Install
 
-Add the GitHub Packages repository to your `settings.gradle.kts`:
+### Option A — Tanvrit Gradle plugin _(recommended)_
 
 ```kotlin
-maven {
-    url = uri("https://maven.pkg.github.com/tanvrit/communication")
-    credentials {
-        username = (project.findProperty("gpr.user") as String?) ?: System.getenv("GITHUB_ACTOR") ?: ""
-        password = (project.findProperty("gpr.key") as String?) ?: System.getenv("GITHUB_TOKEN") ?: ""
+// settings.gradle.kts
+pluginManagement {
+    repositories { maven { url = uri("https://maven.tanvrit.com") } }
+}
+```
+
+```kotlin
+// build.gradle.kts
+plugins { id("com.tanvrit.sdk") version "1.0.12" }
+
+tanvrit {
+    version = "1.0.12"
+    modules = listOf("communication")
+}
+```
+
+### Option B — Direct dependency
+
+```kotlin
+// settings.gradle.kts
+dependencyResolutionManagement {
+    repositories { maven { url = uri("https://maven.tanvrit.com") } }
+}
+```
+
+```kotlin
+// build.gradle.kts  (KMP)
+kotlin {
+    sourceSets {
+        commonMain.dependencies {
+            implementation("com.tanvrit:communication:1.0.12")
+        }
     }
 }
 ```
 
-Add the dependency:
+## Targets
+
+| Platform | Artifact |
+|----------|----------|
+| Android | `communication-android` |
+| Iosarm64 | `communication-iosarm64` |
+| Iossimulatorarm64 | `communication-iossimulatorarm64` |
+| Iosx64 | `communication-iosx64` |
+| Jvm | `communication-jvm` |
+| Js | `communication-js` |
+| Wasm Js | `communication-wasm-js` |
+
+## Quick start
 
 ```kotlin
-// JVM / Ktor server / desktop
-implementation("com.tanvrit:communication-jvm:0.0.2")
+val chat = ChatHandler.shared()
 
-// Android
-implementation("com.tanvrit:communication-android:0.0.2")
+// Send a message
+chat.sendMessage(
+    threadId  = "thread-001",
+    content   = "Hello!",
+    senderId  = "user-001",
+) { message -> println("Sent: \${message?.id}") }
 
-// KMP commonMain
-implementation("com.tanvrit:communication:0.0.2")
-```
-
-## GitHub Packages Authentication
-
-GitHub Packages requires a token even for public packages.
-
-1. Create a [GitHub Personal Access Token](https://github.com/settings/tokens) with `read:packages` scope.
-2. Add to `~/.gradle/gradle.properties`:
-
-```properties
-# ~/.gradle/gradle.properties
-gpr.user=YOUR_GITHUB_USERNAME
-gpr.key=YOUR_GITHUB_PAT_WITH_READ_PACKAGES
-```
-
-## Koin Setup
-
-Register the module with Koin at application start:
-
-```kotlin
-import org.koin.core.context.startKoin
-import com.tanvrit.communication.di.CommunicationModule
-
-startKoin {
-    modules(CommunicationModule())
+// Observe messages in a thread
+chat.messageRepository.messages.collect { messages ->
+    renderMessages(messages)
 }
+
+// Start a call
+val call = CallHandler.shared()
+call.startCall(participantId = "user-002", type = "video")
 ```
 
-## Quick Start
+## Resources
 
-```kotlin
-// Get the shared network client (Koin must be started first)
-val network = CommunicationNetwork.shared()
-```
-
-## Version & Changelog
-
-Current version: **0.0.2**
-
-See [Releases](https://github.com/tanvrit/communication/releases) for the full changelog.
-
----
-
-## Part of the Tanvrit SDK
-
-This module is part of the [Tanvrit Platform](https://tanvrit.com).
-
-All SDK modules: [`core`](https://github.com/tanvrit/core) · [`storage`](https://github.com/tanvrit/storage) · [`auth`](https://github.com/tanvrit/auth) · [`business`](https://github.com/tanvrit/business) · [`commerce`](https://github.com/tanvrit/commerce) · [`communication`](https://github.com/tanvrit/communication) · [`social`](https://github.com/tanvrit/social) · [`ui`](https://github.com/tanvrit/ui) · [`commerceui`](https://github.com/tanvrit/commerceui) · [`commerceapp`](https://github.com/tanvrit/commerceapp)
+- **Full SDK source:** [tanvrit/sdk](https://github.com/tanvrit/sdk)
+- **All modules:** [maven.tanvrit.com](https://maven.tanvrit.com)
+- **Issues:** [tanvrit/sdk/issues](https://github.com/tanvrit/sdk/issues)
